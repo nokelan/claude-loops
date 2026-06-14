@@ -232,6 +232,13 @@ pytest test_wordcount.py  # 5/5 PASS
 
 ---
 
+## 루프 엔지니어링 개념
+
+루프 엔지니어링의 5가지 구성 요소(자동화, 워크트리, 스킬, 플러그인, 서브에이전트)와  
+dev-loopcode가 각각을 어떻게 구현했는지 → [docs/concepts.md](docs/concepts.md)
+
+---
+
 ## 라이선스
 
 MIT
