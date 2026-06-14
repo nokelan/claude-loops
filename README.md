@@ -230,6 +230,21 @@ pytest test_wordcount.py  # 5/5 PASS
 
 포함 파일: `wordcount.py`, `test_wordcount.py`, `sample.txt`, `SPEC.md`, `ADR.md`
 
+### si-test-rpa — Selenium E2E 테스트 자동화
+
+`/dev-loopcode --type app` 실전 예제. 엑셀 테스트케이스 → Selenium 자동 실행 → 결과 리포트 Excel 생성.  
+CONTEXT.md 도메인 언어 + ADR.md 채택 결정 기록까지 포함된 완전한 app 타입 예제.
+
+```bash
+cd examples/si-test-rpa
+pip install -r requirements.txt
+python create_sample_excel.py
+python -m http.server 5500 --directory vue-sample
+python rpa_runner.py  # 별도 터미널
+```
+
+포함 파일: `rpa_runner.py`, `test_rpa.py`, `SPEC.md`, `CONTEXT.md`, `ADR.md`, `vue-sample/`
+
 ---
 
 ## 피드백 / 문제 보고

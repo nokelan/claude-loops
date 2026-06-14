@@ -1,0 +1,7 @@
+{
+  "base_url": "http://localhost:5500",
+  "server_cmd": "python -m http.server 5500",
+  "server_cwd": "vue-sample",
+  "verify_cmd": "python rpa_runner.py",
+  "test_cmd": "pytest test_rpa.py"
+}
