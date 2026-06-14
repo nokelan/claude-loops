@@ -7,7 +7,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-orange)
-![Skills](https://img.shields.io/badge/Skills-9-purple)
+![Skills](https://img.shields.io/badge/Skills-8-purple)
 ![Pipeline](https://img.shields.io/badge/Pipeline-plan→loop→verify-ff6b35)
 ![Mode](https://img.shields.io/badge/Mode-Loop_Engineering-8b5cf6)
 ![Verify](https://img.shields.io/badge/Verify-3_Stage-22c55e)
@@ -29,7 +29,6 @@ Claude Code용 루프 엔지니어링 스킬 모음.
 | `dev` | `/dev` | plan→loop→verify 전체 파이프라인 |
 | `dev-hwaloop` | `/dev-hwaloop` | 2-에이전트 토론 설계 + 루프 |
 | `graphify` | `/graphify` | 지식 그래프 생성/갱신 |
-| `design-page` | `/design-page` | 브랜드 기반 단일 HTML 페이지 생성 |
 | `m-search` | `/m-search` | 과거 Claude 대화 DB 검색 |
 
 ---
