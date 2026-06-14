@@ -1,5 +1,13 @@
 # claude-loops
 
+<!-- 마스코트 이미지 (추가 예정) -->
+<!-- ![claude-loops mascot](assets/mascot.png) -->
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-orange)
+![Skills](https://img.shields.io/badge/Skills-11-purple)
+
 Claude Code용 루프 엔지니어링 스킬 모음.
 
 `/dev-plan → /dev-loop → /dev-verify` 파이프라인으로 목표를 입력하면 자동으로 완료까지 실행합니다.
@@ -44,6 +52,16 @@ bash install.sh
 다른 경로 사용 시:
 ```powershell
 .\install.ps1 -ClaudeHome "C:\Users\YourName\.claude"
+```
+
+### 업데이트
+
+```powershell
+# Windows
+.\update.ps1
+
+# macOS / Linux
+bash update.sh
 ```
 
 ---

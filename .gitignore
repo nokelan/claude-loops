@@ -1,0 +1,19 @@
+.env
+*.env.local
+*.env.*.local
+
+# 테스트/임시 산출물
+SPEC.md
+TASKS.md
+LOOP_STATE.md
+VERIFY_REPORT.md
+TASK_RESULTS/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 에디터
+.vscode/
+.idea/
+*.suo
