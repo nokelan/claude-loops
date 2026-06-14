@@ -27,7 +27,8 @@ description: "코드/API/앱 대상으로 타입 탐지 → HARD GATE → 병렬
 ```
 [0]   INIT       — 타입 탐지 + config.json + OPENAI_API_KEY + CONTEXT.md 탐지
 [0.5] GOAL INTERVIEW — 목표 모호 시 사용자와 AC 확정 (SPEC.md 없을 때만, 루프 차감 없음)
-[1]   PLAN       — 태스크 분해 + CONTEXT.md 도메인 언어 반영 → SPEC.md + TASKS.md
+[0.7] PLAN-DEBATE  — Agent-A(설계자) vs Agent-B(비평가) 토론 → SPEC.md 초안 → 사용자 확정
+[1]   PLAN       — 태스크 분해 + CONTEXT.md 도메인 언어 반영 → TASKS.md 생성
 [1.5] HARD GATE  — AC 측정 가능성 검사 → FAIL → PLAN 루프백
 [2]   BUILD      — 병렬 서브에이전트 (IMPLEMENTER × N, depends_on 기반)
                     ↑ FAIL: FAILED_AC.md 기반 범위 한정 재시도
@@ -162,6 +163,109 @@ Round N — 사용자가 "맞다" / "OK" / 확정 응답할 때까지 반복.
 ```
 
 확정된 AC로 SPEC.md 생성 → PLAN 단계로 진행.
+
+---
+
+### 0.7단계 — PLAN-DEBATE (에이전트 토론 설계)
+
+**SPEC.md가 없을 때만 실행. SPEC.md가 이미 있으면 건너뜀. max-loops 차감 없음.**
+
+0.5단계에서 확정된 AC(또는 목표)를 기반으로 두 에이전트가 토론하여  
+SPEC.md 초안을 검증하고 사용자에게 확인받는다.
+
+#### 파라미터
+
+- `--max-rounds N`: 토론 라운드 최대 횟수 (기본 2)
+
+#### 라운드 실행
+
+**Agent-A (설계자)** 프롬프트:
+```
+역할: 소프트웨어 설계자
+
+목표: [목표]
+확정된 AC: [0.5단계 결과]
+라운드: N
+
+[라운드 1]
+목표와 AC를 분석하여 SPEC 초안을 작성하라.
+포함:
+- Goal (한 문장)
+- Acceptance Criteria (측정 가능, 0.5단계 확정 내용 반영)
+- 기술 접근 방식
+- 주요 위험 요소 2~3개
+- Out of Scope
+
+[라운드 2+]
+이전 비평을 반영하여 SPEC을 개선하라.
+이전 초안: [DEBATE/round_N-1_designer.md]
+비평: [DEBATE/round_N-1_critic.md]
+개선 항목을 명확히 표시하라.
+```
+
+결과를 `DEBATE/round_N_designer.md`에 저장.
+
+**Agent-B (비평가)** 프롬프트:
+```
+역할: 소프트웨어 비평가
+
+목표: [목표]
+설계 초안: [DEBATE/round_N_designer.md 내용]
+
+다음 관점에서 비평하라:
+1. AC가 실제로 측정 가능한가? 모호한 항목 지적
+2. 목표 의도에서 벗어난 설계가 있는가?
+3. 빠진 위험 요소나 제약이 있는가?
+4. Out of Scope가 명확한가?
+
+출력:
+- 수정 필요: [항목 + 이유]
+- 유지: [잘 된 부분]
+- 전반적 판정: 충분 | 미흡
+```
+
+결과를 `DEBATE/round_N_critic.md`에 저장.
+
+#### 오케스트레이터 판단
+
+```
+판정 = Agent-B의 "전반적 판정"
+
+미흡 + 라운드 < max_rounds → 다음 라운드
+미흡 + 라운드 == max_rounds → 최선안으로 진행 (사용자에게 한계 명시)
+충분 → 사용자 보고 단계로
+```
+
+#### 사용자 보고 및 확정
+
+토론 완료 후 SPEC.md 초안을 사용자에게 보고:
+
+```
+[DEV-LOOPCODE] PLAN-DEBATE 완료 (N라운드)
+
+아래 SPEC.md로 진행합니다. 확인해 주세요.
+
+━━━━━━━━━━━━━━━━━
+Goal: [목표]
+
+AC:
+  - AC-1: [내용]
+  - AC-2: [내용]
+  ...
+
+위험 요소:
+  - [위험 1]
+  - [위험 2]
+
+Out of Scope:
+  - [제외 항목]
+━━━━━━━━━━━━━━━━━
+
+수정이 필요하면 알려주세요. 없으면 "OK" / "진행" 으로 확정합니다.
+```
+
+사용자 확정 → SPEC.md 파일 생성 → 1단계 PLAN 진행  
+수정 요청 → 해당 내용 반영 후 재보고 (라운드 추가, max-loops 차감 없음)
 
 ---
 
