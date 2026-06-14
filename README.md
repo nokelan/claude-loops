@@ -7,6 +7,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-orange)
 ![Skills](https://img.shields.io/badge/Skills-11-purple)
+![Pipeline](https://img.shields.io/badge/Pipeline-plan→loop→verify-ff6b35)
+![Mode](https://img.shields.io/badge/Mode-Loop_Engineering-8b5cf6)
+![Verify](https://img.shields.io/badge/Verify-3_Stage-22c55e)
 
 Claude Code용 루프 엔지니어링 스킬 모음.
 
