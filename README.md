@@ -24,7 +24,7 @@ Claude Code용 루프 엔지니어링 스킬 모음.
 |------|--------|------|
 | `dev-plan` | `/dev-plan` | 요구사항 인터뷰 + SPEC.md 생성 |
 | `dev-loop` | `/dev-loop` | SPEC 기반 구현 → 검증 루프 |
-| `dev-loopcode` | `/dev-loopcode` | 코드 타입 탐지 → 병렬 빌드 → 3단계 검증 |
+| `dev-loopcode` | `/dev-loopcode` | 코드 타입 탐지 → 병렬 빌드 → 4단계 검증 + ADR + 리팩토링 제안 |
 | `dev-verify` | `/dev-verify` | 최종 품질 심사 |
 | `dev` | `/dev` | plan→loop→verify 전체 파이프라인 |
 | `dev-hwaloop` | `/dev-hwaloop` | 2-에이전트 토론 설계 + 루프 |
@@ -112,14 +112,47 @@ cp .env.example .env
 ```
 /dev-loopcode "목표"
     ↓
-[타입 탐지]  code | api | app
+[INIT]      타입 탐지 (code|api|app) + CONTEXT.md 도메인 언어 로드
+    ↓
+[HARD GATE] AC 측정가능성 검사
+    ↓
+[BUILD]     병렬 IMPLEMENTER 에이전트 (depends_on 그래프)
     ↓
 [VERIFY-1]  빌드 · 문법 검증
     ↓
-[VERIFY-2]  AC 기능 검증
+[VERIFY-2]  AC 기능 검증 + grill-with-docs 도메인 언어 검사
     ↓
 [VERIFY-3]  Adversarial 검증 (Claude or Codex)
+    ↓
+[RESCUE]    max-loops 임박 시 탈출 전략 주입 (자동)
+    ↓
+[완료]      ADR.md 갱신 + 리팩토링 TOP3 제안
 ```
+
+---
+
+## Examples
+
+`examples/` 폴더에 실제 검증된 사용 예제가 있습니다.
+
+### wordcount-cli — Python CLI 단어통계 도구
+
+`/dev-loopcode` 전체 파이프라인 테스트용 예제 (PLAN→BUILD→VERIFY-1~3→ADR).
+
+```bash
+cd examples/wordcount-cli
+python wordcount.py sample.txt
+# 줄 수: 10
+# 단어 수: 98
+# TOP5 단어:
+#   1. the        (18)
+#   2. fox        (9)
+#   ...
+
+pytest test_wordcount.py  # 5/5 PASS
+```
+
+포함 파일: `wordcount.py`, `test_wordcount.py`, `sample.txt`, `SPEC.md`, `ADR.md`
 
 ---
 
