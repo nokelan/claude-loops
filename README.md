@@ -1,7 +1,8 @@
 # claude-loops
 
-<!-- 마스코트 이미지 (추가 예정) -->
-<!-- ![claude-loops mascot](assets/mascot.png) -->
+<p align="center">
+  <img src="assets/mascot.jpg" width="600" alt="claude-loops mascot — squirrel on keyboard treadmill">
+</p>
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
