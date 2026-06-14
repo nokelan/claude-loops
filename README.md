@@ -59,6 +59,21 @@ cp .env.example .env
 
 ---
 
+## SPEC 템플릿
+
+`templates/` 폴더에 프로젝트 타입별 SPEC.md 예시가 있습니다:
+
+| 폴더 | 용도 |
+|------|------|
+| `templates/web/` | React / Next.js / Vanilla 웹 프로젝트 |
+| `templates/desktop/` | WinForms / WPF / C# 데스크탑 앱 |
+| `templates/server/` | REST API / FastAPI / ASP.NET 서버 |
+| `templates/docs/` | HTML 보고서 / 문서 자동 생성 스크립트 |
+
+`/dev-plan` 없이 바로 시작할 때 해당 템플릿을 SPEC.md로 복사 후 수정하세요.
+
+---
+
 ## 파이프라인 흐름
 
 ```
