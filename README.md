@@ -232,6 +232,17 @@ pytest test_wordcount.py  # 5/5 PASS
 
 ---
 
+## 피드백 / 문제 보고
+
+루프 실행 중 문제가 생겼거나 개선 제안이 있으면:
+
+- **버그**: [Issues → Bug Report](https://github.com/nokelan/claude-loops/issues/new?template=bug_report.md)
+- **제안**: [Issues → Feedback](https://github.com/nokelan/claude-loops/issues/new?template=feedback.md)
+
+> 토큰 소진, 무한 루프 등 치명적 문제는 LOOP_STATE.md를 함께 첨부해 주세요.
+
+---
+
 ## 루프 엔지니어링 개념
 
 루프 엔지니어링의 5가지 구성 요소(자동화, 워크트리, 스킬, 플러그인, 서브에이전트)와  

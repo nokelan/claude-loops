@@ -127,6 +127,9 @@ BLOCKED 또는 max-loops 초과 시에만 멈추고 사용자에게 보고한다
 - status: running
 - started: YYYY-MM-DD
 - max_loops: N
+- interview_count: 0
+- gate_fail_count: 0
+- domain_fail_count: 0
 ```
 
 사용자에게 시작 보고 (목표 + 타입 + 검증 모드 + CONTEXT.md 여부).
@@ -149,6 +152,9 @@ BLOCKED 또는 max-loops 초과 시에만 멈추고 사용자에게 보고한다
 
 #### 인터뷰 루프
 
+**최대 3라운드. 초과 시 중단.**  
+`interview_count`를 라운드마다 +1 한다.
+
 ```
 Round 1 — 사용자에게 질문:
   "어떤 상태가 되면 이 작업이 완료됐다고 볼 수 있나요?
@@ -158,8 +164,12 @@ Round 2 — AC 초안 작성 후 확인:
   초안 AC 목록을 보여주고:
   "이 기준이 맞나요? 추가하거나 바꿀 항목이 있으면 말씀해 주세요."
 
-Round N — 사용자가 "맞다" / "OK" / 확정 응답할 때까지 반복.
-  각 라운드마다 이전 피드백을 반영하여 AC를 수정한다.
+Round 3 — 마지막 시도. 확정되지 않으면:
+  "3회 시도 후에도 AC를 확정할 수 없습니다.
+   SPEC.md를 직접 작성해서 다시 /dev-loopcode를 실행해 주세요."
+  → status: blocked, 중단.
+
+사용자가 "맞다" / "OK" / 확정 응답하면 라운드와 무관하게 다음으로 진행.
 ```
 
 확정된 AC로 SPEC.md 생성 → PLAN 단계로 진행.
@@ -319,14 +329,24 @@ IMPLEMENTER에게: CONTEXT.md의 도메인 용어를 그대로 사용하라.
 
 HARD GATE FAIL:
 ```
-[DEV-LOOPCODE] HARD GATE FAIL
+[DEV-LOOPCODE] HARD GATE FAIL (N/3)
 모호한 AC: AC-N "[원문]" — 이유: 측정 불가 기준
 수정 방향: [구체적 개선 안]
 → PLAN 재실행
 ```
-사용자에게 안내 후 1단계 루프백. max-loops 차감 없음.
+`gate_fail_count` +1. max-loops 차감 없음.
 
-HARD GATE PASS → `current_step: build`
+**gate_fail_count >= 3 이면:**
+```
+[DEV-LOOPCODE] HARD GATE 3회 연속 실패 — 자동 진행 중단
+AC가 반복적으로 모호합니다. SPEC.md의 AC를 직접 수정 후 재실행해 주세요.
+현재 SPEC.md: [경로]
+```
+→ status: blocked, 중단.
+
+gate_fail_count < 3 이면 1단계 루프백.
+
+HARD GATE PASS → `current_step: build`, `gate_fail_count: 0` 초기화
 
 ---
 
@@ -437,8 +457,16 @@ AC 기능 검증 통과 후 도메인 언어 일관성 검사:
 - DOMAIN FAIL: [위반 목록 + 파일:라인 + 권장 수정]
 ```
 
-DOMAIN FAIL → BUILD 루프백 (코드/변수명 수정 요청)  
-DOMAIN PASS → 5단계
+DOMAIN FAIL:
+- `domain_fail_count` +1
+- domain_fail_count <= 2: BUILD 루프백 (코드/변수명 수정 요청)
+- domain_fail_count >= 3: 경고 후 통과 처리
+  ```
+  [DEV-LOOPCODE] DOMAIN 검사 3회 실패 — 도메인 위반을 안고 진행합니다.
+  CONTEXT.md 업데이트를 권장합니다.
+  ```
+
+DOMAIN PASS → `domain_fail_count: 0` 초기화 → 5단계
 
 세션 크래시 복구 (app 타입):
 ```
