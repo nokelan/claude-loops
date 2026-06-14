@@ -26,6 +26,7 @@ description: "코드/API/앱 대상으로 타입 탐지 → HARD GATE → 병렬
 
 ```
 [0]   INIT       — 타입 탐지 + config.json + OPENAI_API_KEY + CONTEXT.md 탐지
+[0.5] GOAL INTERVIEW — 목표 모호 시 사용자와 AC 확정 (SPEC.md 없을 때만, 루프 차감 없음)
 [1]   PLAN       — 태스크 분해 + CONTEXT.md 도메인 언어 반영 → SPEC.md + TASKS.md
 [1.5] HARD GATE  — AC 측정 가능성 검사 → FAIL → PLAN 루프백
 [2]   BUILD      — 병렬 서브에이전트 (IMPLEMENTER × N, depends_on 기반)
@@ -34,7 +35,7 @@ description: "코드/API/앱 대상으로 타입 탐지 → HARD GATE → 병렬
 [4]   VERIFY-2   — AC 기능 검증 + 도메인 언어 검사(/grill-with-docs)
 [5]   VERIFY-3   — Adversarial (Codex CLI → rescue 모드 | Claude 폴백)
 [5.5] RESCUE     — max-loops 임박 시 외부 시각 주입 (탈출 전략 제안)
-[완료] ADR.md 갱신 + /improve-codebase-architecture 제안 + 텔레그램 + 위키(선택)
+[완료] ADR.md 갱신 + /improve-codebase-architecture 제안 + 사용자 보고 + 위키(선택)
        실패 → max-loops 초과 → 사용자 개입 요청
 ```
 
@@ -44,7 +45,7 @@ description: "코드/API/앱 대상으로 타입 탐지 → HARD GATE → 병렬
 
 사용자가 이 스킬을 호출하면 아래 단계를 **자동으로, 순서대로** 실행한다.  
 각 단계 사이에 사용자 허락을 구하지 않는다.  
-BLOCKED 또는 max-loops 초과 시에만 멈추고 텔레그램으로 보고한다.
+BLOCKED 또는 max-loops 초과 시에만 멈추고 사용자에게 보고한다.
 
 ---
 
@@ -93,7 +94,7 @@ BLOCKED 또는 max-loops 초과 시에만 멈추고 텔레그램으로 보고한
 없으면:
   - context_loaded: false 기록
   - VERIFY-2 도메인 검사 단계 건너뜀
-  - 완료 시 "CONTEXT.md 생성을 권장합니다" 텔레그램 알림
+  - 완료 시 "CONTEXT.md 생성을 권장합니다" 사용자 안내
 ```
 
 #### 0-4. 타입 탐지 (`--type auto`인 경우)
@@ -127,7 +128,40 @@ BLOCKED 또는 max-loops 초과 시에만 멈추고 텔레그램으로 보고한
 - max_loops: N
 ```
 
-텔레그램 시작 알림 전송 (목표 + 타입 + 검증 모드 + CONTEXT.md 여부).
+사용자에게 시작 보고 (목표 + 타입 + 검증 모드 + CONTEXT.md 여부).
+
+---
+
+### 0.5단계 — GOAL INTERVIEW (목표 명확화)
+
+**SPEC.md가 없고 목표 인수만 있을 때 실행. SPEC.md가 이미 있으면 건너뜀.**
+
+목표가 "측정 가능한 AC"로 바로 변환될 만큼 구체적인지 판단한다.  
+모호하면 명확해질 때까지 사용자에게 반복 질문한다. **max-loops 차감 없음.**
+
+#### 판단 기준
+
+| 상태 | 조건 | 액션 |
+|------|------|------|
+| 즉시 진행 | 목표에 수치/판정/구체적 완료 조건 포함 | PLAN으로 직행 |
+| 인터뷰 필요 | "잘 동작하는", "빠른", "편한" 등 모호한 표현 | 아래 인터뷰 루프 실행 |
+
+#### 인터뷰 루프
+
+```
+Round 1 — 사용자에게 질문:
+  "어떤 상태가 되면 이 작업이 완료됐다고 볼 수 있나요?
+   숫자, 판정(PASS/FAIL), 특정 출력 등으로 표현해 주세요."
+
+Round 2 — AC 초안 작성 후 확인:
+  초안 AC 목록을 보여주고:
+  "이 기준이 맞나요? 추가하거나 바꿀 항목이 있으면 말씀해 주세요."
+
+Round N — 사용자가 "맞다" / "OK" / 확정 응답할 때까지 반복.
+  각 라운드마다 이전 피드백을 반영하여 AC를 수정한다.
+```
+
+확정된 AC로 SPEC.md 생성 → PLAN 단계로 진행.
 
 ---
 
@@ -186,7 +220,7 @@ HARD GATE FAIL:
 수정 방향: [구체적 개선 안]
 → PLAN 재실행
 ```
-텔레그램 알림 후 1단계 루프백. max-loops 차감 없음.
+사용자에게 안내 후 1단계 루프백. max-loops 차감 없음.
 
 HARD GATE PASS → `current_step: build`
 
@@ -392,7 +426,7 @@ RESCUE 후에도 실패 → max-loops 초과 처리
 마지막 VERIFY: VERIFY_REPORT.md
 수동 개입이 필요합니다.
 ```
-LOOP_STATE.md: `status: blocked` + 텔레그램 전송.
+LOOP_STATE.md: `status: blocked` + 사용자에게 보고.
 
 ---
 
@@ -448,7 +482,7 @@ LOOP_STATE.md: `status: blocked` + 텔레그램 전송.
 출력: 우선순위 TOP 3 개선 제안 (변경하지 말고 제안만)
 ```
 
-제안은 텔레그램과 VERIFY_REPORT.md 마지막에 `## 리팩토링 제안` 섹션으로 기록.
+제안은 VERIFY_REPORT.md 마지막 `## 리팩토링 제안` 섹션으로 기록하고 사용자에게 요약 보고.
 
 #### 6-4. 최종 보고
 
@@ -466,7 +500,7 @@ ADR.md 갱신 완료
 ```
 
 5. **위키 저장 (선택)**: SPEC.md의 `wiki_path` 항목 있으면 저장.
-6. 텔레그램 완료 알림 전송.
+6. 사용자에게 완료 보고.
 
 ---
 
@@ -523,5 +557,5 @@ ADR.md 갱신 완료
 | mattpocock/grill-with-docs | 도메인 언어 일관성 검사 | VERIFY-2 |
 | mattpocock/improve-codebase-architecture | 리팩토링 제안 | 완료 |
 | mattpocock/adr-writer | 아키텍처 결정 기록 | 완료 |
-| dev-loop | SPEC/AC 루프, 텔레그램 보고 | 전체 |
+| dev-loop | SPEC/AC 루프, 사용자 보고 | 전체 |
 | dev-hwaloop | LOOP_STATE.md, --resume | 전체 |
